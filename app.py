@@ -6,7 +6,7 @@ import datetime
 
 # --- 1. APP CONFIGURATION ---
 st.set_page_config(
-    page_title="Titan v29.3 | Smart CSV Fix", 
+    page_title="Titan v30.0 | Demo Fix", 
     layout="wide", 
     page_icon="⚡",
     initial_sidebar_state="expanded"
@@ -61,7 +61,7 @@ st.markdown("""
 # --- 3. SIDEBAR: THE CONTROL CENTER ---
 with st.sidebar:
     st.title("Titan Architect")
-    st.caption("v29.3 | Smart CSV")
+    st.caption("v30.0 | Demo Mode Fix")
     st.divider()
     
     # 3.1 VISUAL DNA
@@ -259,7 +259,6 @@ def get_theme_css():
         anim_css = ".reveal { opacity: 0; transform: scale(0.95); transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); } .reveal.active { opacity: 1; transform: scale(1); }"
     
     # UPGRADED: Hero Carousel CSS
-    # FIX: Cleaned up duplications so images show properly
     hero_css = """
     .hero { position: relative; min-height: 90vh; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; color: white; padding-top: 80px; background-color: var(--p); }
     .carousel-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; z-index: 0; }
@@ -504,32 +503,35 @@ def gen_csv_parser():
     </script>
     """
 
-def gen_inventory_js():
+def gen_inventory_js(is_demo=False):
+    # FIX: Add demo flag injection
+    demo_flag = "const isDemo = true;" if is_demo else "const isDemo = false;"
+    
     return f"""
     {gen_csv_parser()}
     <script>
+    {demo_flag}
+    
     async function loadInv() {{
         try {{
             const res = await fetch('{sheet_url}');
             const txt = await res.text();
-            
-            // Use the Smart Parser
             const rows = parseGlobalCSV(txt);
             const box = document.getElementById('inv-grid');
             if(!box) return;
             box.innerHTML = '';
             
-            // Start from 1 to skip Header
             for(let i=1; i<rows.length; i++) {{
                 const clean = rows[i];
-                if(clean.length < 2) continue; // Skip empty rows
+                if(clean.length < 2) continue; 
 
+                // FIX: Aggressive Image Fallback with onError
                 let img = clean[3] && clean[3].length > 5 ? clean[3] : '{custom_feat}'; 
                 
                 const prodName = encodeURIComponent(clean[0]);
                 box.innerHTML += `
                 <div class="card reveal">
-                    <img src="${{img}}" class="prod-img" onerror="this.src='{custom_feat}'">
+                    <img src="${{img}}" class="prod-img" onerror="this.onerror=null;this.src='{custom_feat}';">
                     <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:space-between;">
                         <div>
                             <h3>${{clean[0]}}</h3>
@@ -556,7 +558,7 @@ def gen_inventory():
         <div class="section-head reveal"><h2>Live Inventory</h2><p>Real-time availability directly from our warehouse.</p></div>
         <div id="inv-grid" class="grid-3"><div style="grid-column:1/-1; text-align:center; padding:4rem; color:var(--s);">Loading Database...</div></div>
     </div></section>
-    {gen_inventory_js() if sheet_url else ''}
+    {gen_inventory_js(is_demo=False)}
     """
 
 def gen_about_section():
@@ -596,7 +598,7 @@ def gen_footer():
     # FIX: Correct SVG path for YouTube
     icons = ""
     if fb_link: icons += f'<a href="{fb_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>'
-    if ig_link: icons += f'<a href="{ig_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M16.98 0a6.9 6.9 0 0 1 5.08 1.98A6.94 6.94 0 0 1 24 7.02v9.96c0 2.08-.68 3.87-1.98 5.13A7.14 7.14 0 0 1 16.94 24H7.06a7.06 7.06 0 0 1-5.03-1.89A6.96 6.96 0 0 1 0 16.94V7.02C0 2.8 2.8 0 7.02 0h9.96zM7.17 2.1c-1.4 0-2.6.48-3.46 1.33c-.85.85-1.33 2.06-1.33 3.46v10.3c0 1.3.47 2.5 1.33 3.36c.86.85 2.06 1.33 3.46 1.33h9.66c1.4 0 2.6-.48 3.46-1.33c.85-.85 1.33-2.06 1.33-3.46V6.89c0-1.4-.47-2.6-1.33-3.46c-.86-.85-2.06-1.33-3.46-1.33H7.17zm11.97 3.33c.77 0 1.4.63 1.4 1.4c0 .77-.63 1.4-1.4 1.4c-.77 0-1.4-.63-1.4-1.4c0-.77.63-1.4 1.4-1.4zM12 5.76c3.39 0 6.14 2.75 6.14 6.14c0 3.39-2.75 6.14-6.14 6.14c-3.39 0-6.14-2.75-6.14-6.14c0-3.39 2.75-6.14 6.14-6.14zm0 2.1c-2.2 0-3.99 1.79-3.99 4.04c0 2.25 1.79 4.04 3.99 4.04c2.2 0 3.99-1.79 3.99-4.04c0-2.25-1.79-4.04-3.99-4.04c0-2.25-1.79-4.04-3.99-4.04z"/></svg></a>'
+    if ig_link: icons += f'<a href="{ig_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M16.98 0a6.9 6.9 0 0 1 5.08 1.98A6.94 6.94 0 0 1 24 7.02v9.96c0 2.08-.68 3.87-1.98 5.13A7.14 7.14 0 0 1 16.94 24H7.06a7.06 7.06 0 0 1-5.03-1.89A6.96 6.96 0 0 1 0 16.94V7.02C0 2.8 2.8 0 7.02 0h9.96zM7.17 2.1c-1.4 0-2.6.48-3.46 1.33c-.85.85-1.33 2.06-1.33 3.46v10.3c0 1.3.47 2.5 1.33 3.36c.86.85 2.06 1.33 3.46 1.33h9.66c1.4 0 2.6-.48 3.46-1.33c.85-.85 1.33-2.06 1.33-3.46V6.89c0-1.4-.47-2.6-1.33-3.46c-.86-.85-2.06-1.33-3.46-1.33H7.17zm11.97 3.33c.77 0 1.4.63 1.4 1.4c0 .77-.63 1.4-1.4 1.4c-.77 0-1.4-.63-1.4-1.4c0-.77.63-1.4 1.4-1.4zM12 5.76c3.39 0 6.14 2.75 6.14 6.14c0 3.39-2.75 6.14-6.14 6.14c-3.39 0-6.14-2.75-6.14-6.14c0-3.39 2.75-6.14 6.14-6.14zm0 2.1c-2.2 0-3.99 1.79-3.99 4.04c0 2.25 1.79 4.04 3.99 4.04c2.2 0 3.99-1.79 3.99-4.04c0-2.25-1.79-4.04-3.99-4.04c0-2.25-1.79-4.04-3.99-4.04c0-2.25-1.79-4.04-3.99-4.04z"/></svg></a>'
     if x_link: icons += f'<a href="{x_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584l-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"></path></svg></a>'
     if li_link: icons += f'<a href="{li_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2a2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2zM4 2a2 2 0 1 1-2 2a2 2 0 0 1 2-2z"></path></svg></a>'
     if yt_link: icons += f'<a href="{yt_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>'
@@ -698,13 +700,16 @@ def gen_404_content():
     """
 
 # --- NEW: DYNAMIC PRODUCT PAGE (WITH SOCIAL SHARING) ---
-def gen_product_page_content():
+def gen_product_page_content(is_demo=False):
+    # FIX: Add demo flag injection to FORCE the preview to show something
+    demo_flag = "const isDemo = true;" if is_demo else "const isDemo = false;"
+    
     return f"""
     <section style="padding-top:150px;">
         <div class="container">
             <div id="product-detail" class="detail-view">
-                <div style="background:#eee; height:400px; border-radius:12px; display:flex; align-items:center; justify-content:center;">Loading...</div>
-                <div>Loading...</div>
+                <div style="background:#eee; height:400px; border-radius:12px; display:flex; align-items:center; justify-content:center;">Loading Product...</div>
+                <div>Loading Details...</div>
             </div>
         </div>
     </section>
@@ -719,13 +724,19 @@ def gen_product_page_content():
     function shareLI(url) {{ window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url), '_blank'); }}
     function copyLink(url) {{ navigator.clipboard.writeText(url); alert('Link copied!'); }}
 
+    {demo_flag}
+
     async function loadProduct() {{
         const params = new URLSearchParams(window.location.search);
-        const targetName = params.get('item');
+        let targetName = params.get('item');
         const currentUrl = window.location.href;
         
-        if(!targetName) {{
-            document.getElementById('product-detail').innerHTML = '<h2>Product not found</h2>';
+        // FIX: If Demo Mode is Active (Preview), Force a Product Name
+        if(isDemo) {{
+            // We just grab the first item from the CSV later, or set a dummy one now
+            // But better to let the CSV parser find the first valid row.
+        }} else if(!targetName) {{
+            document.getElementById('product-detail').innerHTML = '<h2>Product not found (No Item Selected)</h2>';
             return;
         }}
 
@@ -733,21 +744,28 @@ def gen_product_page_content():
             const res = await fetch('{sheet_url}');
             const txt = await res.text();
             
-            // Use Smart Parser here too!
+            // Use Smart Parser
             const rows = parseGlobalCSV(txt);
             
             let found = false;
             
-            // Skip Header
+            // Skip Header (i=1)
             for(let i=1; i<rows.length; i++) {{
                 const clean = rows[i];
-                if(clean.length > 0 && clean[0] === targetName) {{
+                if(clean.length < 2) continue;
+
+                // IF DEMO MODE: Just take the first valid product
+                if(isDemo) {{
+                    targetName = clean[0]; // Set target to the first product found
+                }}
+
+                if(clean[0] === targetName) {{
                     found = true;
-                    // Strict Column 3 check + Fallback
+                    // FIX: Aggressive Image Fallback
                     let img = clean[3] && clean[3].length > 5 ? clean[3] : '{custom_feat}'; 
                     
                     document.getElementById('product-detail').innerHTML = `
-                        <img src="${{img}}" onerror="this.src='{custom_feat}'" style="width:100%; height:auto; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);">
+                        <img src="${{img}}" onerror="this.onerror=null;this.src='{custom_feat}';" style="width:100%; height:auto; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);">
                         <div>
                             <h1 style="font-size:3rem; line-height:1.1;">${{clean[0]}}</h1>
                             <p style="font-size:1.5rem; color:var(--s); font-weight:bold; margin-bottom:1.5rem;">${{clean[1]}}</p>
@@ -893,8 +911,9 @@ with c1:
     elif preview_mode == "Terms":
         st.components.v1.html(build_page("Terms", terms_content), height=600, scrolling=True)
     elif preview_mode == "Product Detail (Demo)":
-        st.warning("Preview only shows layout. Live data requires the downloaded file.")
-        st.components.v1.html(build_page("Product Name", gen_product_page_content()), height=600, scrolling=True)
+        # FIX: Call with is_demo=True to force the first product to appear
+        st.info("ℹ️ Demo Mode Active: Showing the first available product from your CSV to preview the layout.")
+        st.components.v1.html(build_page("Product Name", gen_product_page_content(is_demo=True)), height=600, scrolling=True)
 
 with c2:
     st.success("System Ready.")
@@ -908,8 +927,8 @@ with c2:
             zf.writestr("privacy.html", build_page("Privacy Policy", privacy_content))
             zf.writestr("terms.html", build_page("Terms of Service", terms_content))
             
-            # 2. Product Detail Page
-            zf.writestr("product.html", build_page("Product Details", gen_product_page_content()))
+            # 2. Product Detail Page (Note: is_demo=False for the real live site)
+            zf.writestr("product.html", build_page("Product Details", gen_product_page_content(is_demo=False)))
 
             # 3. 404 Page
             zf.writestr("404.html", build_page("404 Not Found", gen_404_content()))
