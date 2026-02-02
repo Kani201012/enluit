@@ -6,7 +6,7 @@ import datetime
 
 # --- 1. APP CONFIGURATION ---
 st.set_page_config(
-    page_title="Titan v30.0 | Demo Fix", 
+    page_title="Titan v30.1 | Logic Restored", 
     layout="wide", 
     page_icon="⚡",
     initial_sidebar_state="expanded"
@@ -61,7 +61,7 @@ st.markdown("""
 # --- 3. SIDEBAR: THE CONTROL CENTER ---
 with st.sidebar:
     st.title("Titan Architect")
-    st.caption("v30.0 | Demo Mode Fix")
+    st.caption("v30.1 | Logic Restore")
     st.divider()
     
     # 3.1 VISUAL DNA
@@ -460,51 +460,30 @@ def gen_stats():
     </div>
     """
 
-# --- SMART CSV PARSER (THE FIX) ---
+# --- RESTORED LOGIC FROM v26.5 ---
 def gen_csv_parser():
     return """
     <script>
-    // Robust CSV Parser that handles Quotes and Newlines correctly
-    function parseGlobalCSV(text) {
-        let results = [];
-        let row = [];
-        let current = "";
+    function parseCSVLine(str) {
+        const res = [];
+        let cur = '';
         let inQuote = false;
-        
-        for (let i = 0; i < text.length; i++) {
-            let c = text[i];
-            let next = text[i+1];
-            
+        for (let i = 0; i < str.length; i++) {
+            const c = str[i];
             if (c === '"') {
-                if (inQuote && next === '"') {
-                    current += '"'; i++; // Skip escaped quote
-                } else {
-                    inQuote = !inQuote;
-                }
+                if (inQuote && str[i+1] === '"') { cur += '"'; i++; }
+                else { inQuote = !inQuote; }
             } else if (c === ',' && !inQuote) {
-                row.push(current.trim());
-                current = "";
-            } else if ((c === '\\r' || c === '\\n') && !inQuote) {
-                if (current || row.length > 0) row.push(current.trim());
-                if (row.length > 0) results.push(row);
-                row = [];
-                current = "";
-                if (c === '\\r' && next === '\\n') i++; // Skip next newline
-            } else {
-                current += c;
-            }
+                res.push(cur.trim()); cur = '';
+            } else { cur += c; }
         }
-        if (current || row.length > 0) {
-            row.push(current.trim());
-            results.push(row);
-        }
-        return results;
+        res.push(cur.trim());
+        return res;
     }
     </script>
     """
 
 def gen_inventory_js(is_demo=False):
-    # FIX: Add demo flag injection
     demo_flag = "const isDemo = true;" if is_demo else "const isDemo = false;"
     
     return f"""
@@ -516,34 +495,39 @@ def gen_inventory_js(is_demo=False):
         try {{
             const res = await fetch('{sheet_url}');
             const txt = await res.text();
-            const rows = parseGlobalCSV(txt);
+            
+            // REVERTED: Split by newline first (v26.5 logic)
+            const lines = txt.split(/\\r\\n|\\n/);
             const box = document.getElementById('inv-grid');
             if(!box) return;
             box.innerHTML = '';
             
-            for(let i=1; i<rows.length; i++) {{
-                const clean = rows[i];
-                if(clean.length < 2) continue; 
+            for(let i=1; i<lines.length; i++) {{
+                if(!lines[i].trim()) continue;
+                const clean = parseCSVLine(lines[i]);
 
-                // FIX: Aggressive Image Fallback with onError
+                // RESTORED: Logic checking Column 6 (Index 6) for image
                 let img = clean[3] && clean[3].length > 5 ? clean[3] : '{custom_feat}'; 
-                
-                const prodName = encodeURIComponent(clean[0]);
-                box.innerHTML += `
-                <div class="card reveal">
-                    <img src="${{img}}" class="prod-img" onerror="this.onerror=null;this.src='{custom_feat}';">
-                    <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:space-between;">
-                        <div>
-                            <h3>${{clean[0]}}</h3>
-                            <p style="font-weight:bold; color:var(--s); font-size:1.1rem;">${{clean[1]}}</p>
-                            <p style="font-size:0.9rem; opacity:0.7; margin-bottom:1rem;">${{clean[2] ? clean[2].substring(0,60)+'...' : ''}}</p>
+                if(clean[6] && clean[6].length > 5) img = clean[6];
+
+                if(clean.length > 1) {{
+                    const prodName = encodeURIComponent(clean[0]);
+                    box.innerHTML += `
+                    <div class="card reveal">
+                        <img src="${{img}}" class="prod-img" onerror="this.onerror=null;this.src='{custom_feat}';">
+                        <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:space-between;">
+                            <div>
+                                <h3>${{clean[0]}}</h3>
+                                <p style="font-weight:bold; color:var(--s); font-size:1.1rem;">${{clean[1]}}</p>
+                                <p style="font-size:0.9rem; opacity:0.7; margin-bottom:1rem;">${{clean[2] ? clean[2].substring(0,60)+'...' : ''}}</p>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                                <a href="product.html?item=${{prodName}}" class="btn" style="background:#e2e8f0; color:var(--primary); padding:0.8rem; font-size:0.8rem;">View Details</a>
+                                <a href="https://wa.me/{wa_num}?text=I am interested in ${{prodName}}" target="_blank" class="btn-primary btn" style="padding:0.8rem; font-size:0.8rem;">WhatsApp</a>
+                            </div>
                         </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
-                            <a href="product.html?item=${{prodName}}" class="btn" style="background:#e2e8f0; color:var(--primary); padding:0.8rem; font-size:0.8rem;">View Details</a>
-                            <a href="https://wa.me/{wa_num}?text=I am interested in ${{prodName}}" target="_blank" class="btn-primary btn" style="padding:0.8rem; font-size:0.8rem;">WhatsApp</a>
-                        </div>
-                    </div>
-                </div>`;
+                    </div>`;
+                }}
             }}
         }} catch(e) {{ console.log(e); }}
     }}
@@ -562,7 +546,6 @@ def gen_inventory():
     """
 
 def gen_about_section():
-    # USES SHORT TEXT FOR HOME
     formatted_about = format_text(about_short)
     return f"""
     <section id="about"><div class="container">
@@ -598,7 +581,7 @@ def gen_footer():
     # FIX: Correct SVG path for YouTube
     icons = ""
     if fb_link: icons += f'<a href="{fb_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>'
-    if ig_link: icons += f'<a href="{ig_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M16.98 0a6.9 6.9 0 0 1 5.08 1.98A6.94 6.94 0 0 1 24 7.02v9.96c0 2.08-.68 3.87-1.98 5.13A7.14 7.14 0 0 1 16.94 24H7.06a7.06 7.06 0 0 1-5.03-1.89A6.96 6.96 0 0 1 0 16.94V7.02C0 2.8 2.8 0 7.02 0h9.96zM7.17 2.1c-1.4 0-2.6.48-3.46 1.33c-.85.85-1.33 2.06-1.33 3.46v10.3c0 1.3.47 2.5 1.33 3.36c.86.85 2.06 1.33 3.46 1.33h9.66c1.4 0 2.6-.48 3.46-1.33c.85-.85 1.33-2.06 1.33-3.46V6.89c0-1.4-.47-2.6-1.33-3.46c-.86-.85-2.06-1.33-3.46-1.33H7.17zm11.97 3.33c.77 0 1.4.63 1.4 1.4c0 .77-.63 1.4-1.4 1.4c-.77 0-1.4-.63-1.4-1.4c0-.77.63-1.4 1.4-1.4zM12 5.76c3.39 0 6.14 2.75 6.14 6.14c0 3.39-2.75 6.14-6.14 6.14c-3.39 0-6.14-2.75-6.14-6.14c0-3.39 2.75-6.14 6.14-6.14zm0 2.1c-2.2 0-3.99 1.79-3.99 4.04c0 2.25 1.79 4.04 3.99 4.04c2.2 0 3.99-1.79 3.99-4.04c0-2.25-1.79-4.04-3.99-4.04c0-2.25-1.79-4.04-3.99-4.04c0-2.25-1.79-4.04-3.99-4.04z"/></svg></a>'
+    if ig_link: icons += f'<a href="{ig_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M16.98 0a6.9 6.9 0 0 1 5.08 1.98A6.94 6.94 0 0 1 24 7.02v9.96c0 2.08-.68 3.87-1.98 5.13A7.14 7.14 0 0 1 16.94 24H7.06a7.06 7.06 0 0 1-5.03-1.89A6.96 6.96 0 0 1 0 16.94V7.02C0 2.8 2.8 0 7.02 0h9.96zM7.17 2.1c-1.4 0-2.6.48-3.46 1.33c-.85.85-1.33 2.06-1.33 3.46v10.3c0 1.3.47 2.5 1.33 3.36c.86.85 2.06 1.33 3.46 1.33h9.66c1.4 0 2.6-.48 3.46-1.33c.85-.85 1.33-2.06 1.33-3.46V6.89c0-1.4-.47-2.6-1.33-3.46c-.86-.85-2.06-1.33-3.46-1.33H7.17zm11.97 3.33c.77 0 1.4.63 1.4 1.4c0 .77-.63 1.4-1.4 1.4c-.77 0-1.4-.63-1.4-1.4c0-.77.63-1.4 1.4-1.4zM12 5.76c3.39 0 6.14 2.75 6.14 6.14c0 3.39-2.75 6.14-6.14 6.14c-3.39 0-6.14-2.75-6.14-6.14c0-3.39 2.75-6.14 6.14-6.14zm0 2.1c-2.2 0-3.99 1.79-3.99 4.04c0 2.25 1.79 4.04 3.99 4.04c2.2 0 3.99-1.79 3.99-4.04c0-2.25-1.79-4.04-3.99-4.04c0-2.25-1.79-4.04-3.99-4.04c0-2.25-1.79-4.04-3.99-4.04c0-2.25-1.79-4.04-3.99-4.04z"/></svg></a>'
     if x_link: icons += f'<a href="{x_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584l-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"></path></svg></a>'
     if li_link: icons += f'<a href="{li_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2a2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2zM4 2a2 2 0 1 1-2 2a2 2 0 0 1 2-2z"></path></svg></a>'
     if yt_link: icons += f'<a href="{yt_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>'
@@ -744,14 +727,14 @@ def gen_product_page_content(is_demo=False):
             const res = await fetch('{sheet_url}');
             const txt = await res.text();
             
-            // Use Smart Parser
-            const rows = parseGlobalCSV(txt);
+            // REVERTED: Split Logic matches v26.5
+            const lines = txt.split(/\\r\\n|\\n/);
             
             let found = false;
             
             // Skip Header (i=1)
-            for(let i=1; i<rows.length; i++) {{
-                const clean = rows[i];
+            for(let i=1; i<lines.length; i++) {{
+                const clean = parseCSVLine(lines[i]);
                 if(clean.length < 2) continue;
 
                 // IF DEMO MODE: Just take the first valid product
@@ -761,9 +744,10 @@ def gen_product_page_content(is_demo=False):
 
                 if(clean[0] === targetName) {{
                     found = true;
-                    // FIX: Aggressive Image Fallback
+                    // RESTORED: Column 6 Check
                     let img = clean[3] && clean[3].length > 5 ? clean[3] : '{custom_feat}'; 
-                    
+                    if(clean[6] && clean[6].length > 5) img = clean[6];
+
                     document.getElementById('product-detail').innerHTML = `
                         <img src="${{img}}" onerror="this.onerror=null;this.src='{custom_feat}';" style="width:100%; height:auto; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);">
                         <div>
