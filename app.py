@@ -260,7 +260,7 @@ def get_theme_css():
     
     # UPGRADED: Hero Carousel CSS
     hero_css = """
-    .hero { position: relative; min-height: 90vh; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; color: white; padding-top: 80px; }
+    .hero { position: relative; min-height: 90vh; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; color: white; padding-top: 80px; background-color: var(--p); }
     .carousel-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; z-index: -1; }
     .carousel-slide.active { opacity: 1; }
     .hero-overlay { background: rgba(0,0,0,0.5); position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
@@ -788,42 +788,82 @@ st.subheader("🚀 Launchpad")
 
 preview_mode = st.radio("Preview Page:", ["Home", "About", "Contact", "Privacy", "Terms", "Product Detail (Demo)"], horizontal=True)
 
-# Generate static contents for other pages with better formatting
-about_content = f'<section class="hero" style="min-height:50vh;"><div class="container"><h1>About Us</h1></div></section><section><div class="container legal-text">{format_text(about_long)}</div></section>'
-
-# UPGRADED: Added FormSubmit.co Logic
-contact_content = f"""
-<section class="hero" style="min-height:50vh;"><div class="container"><h1>Contact Us</h1></div></section>
-<section><div class="container">
-    <div class="grid-3" style="grid-template-columns: 1fr 2fr;">
-        <div>
-            <h3>Get In Touch</h3>
-            <p><strong>Address:</strong><br>{biz_addr}</p><br>
-            <p><strong>Phone:</strong><br><a href="tel:{biz_phone}">{biz_phone}</a></p><br>
-            <p><strong>Email:</strong><br><a href="mailto:{biz_email}">{biz_email}</a></p>
+# HELPER: Function to generate a header for inner pages with the image
+def gen_inner_header(title):
+    return f"""
+    <section class="hero" style="min-height: 40vh; background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('{hero_img_1}'); background-size: cover; background-position: center;">
+        <div class="container">
+            <h1 style="font-size: 3.5rem; margin-bottom: 0;">{title}</h1>
         </div>
-        <div class="card">
-            <form action="https://formsubmit.co/{biz_email}" method="POST">
-                <label>Name</label>
-                <input type="text" name="name" required>
-                <label>Email</label>
-                <input type="email" name="email" required>
-                <label>Message</label>
-                <textarea name="message" rows="5" required></textarea>
-                <button type="submit" class="btn btn-primary" style="width:100%;">Send Message</button>
-                <input type="hidden" name="_captcha" value="false">
-                <input type="hidden" name="_next" value="{prod_url}/contact.html">
-            </form>
+    </section>
+    """
+
+# 1. GENERATE ABOUT PAGE CONTENT (Fixed)
+about_body = format_text(about_long)
+about_content = f"""
+{gen_inner_header("About Us")}
+<section>
+    <div class="container">
+        <div class="about-grid">
+            <div class="legal-text">{about_body}</div>
+            <img src="{about_img}" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);">
         </div>
     </div>
-    <br><br>
-    {map_iframe}
-</div></section>
+</section>
 """
 
-privacy_content = f'<section><div class="container legal-text"><h1>Privacy Policy</h1><br>{format_text(priv_txt)}</div></section>'
-terms_content = f'<section><div class="container legal-text"><h1>Terms of Service</h1><br>{format_text(term_txt)}</div></section>'
+# 2. GENERATE CONTACT PAGE CONTENT (Fixed)
+contact_content = f"""
+{gen_inner_header("Contact Us")}
+<section>
+    <div class="container">
+        <div class="grid-3" style="grid-template-columns: 1fr 2fr; gap: 3rem;">
+            <div>
+                <div style="background:var(--card); padding:2rem; border-radius:12px; border:1px solid #eee;">
+                    <h3 style="color:var(--p);">Get In Touch</h3>
+                    <p style="margin-top:1rem;"><strong>📍 Address:</strong><br>{biz_addr}</p>
+                    <p style="margin-top:1rem;"><strong>📞 Phone:</strong><br><a href="tel:{biz_phone}" style="color:var(--s);">{biz_phone}</a></p>
+                    <p style="margin-top:1rem;"><strong>📧 Email:</strong><br><a href="mailto:{biz_email}">{biz_email}</a></p>
+                    <br>
+                    <a href="https://wa.me/{wa_num}" target="_blank" class="btn btn-accent" style="width:100%; text-align:center;">Chat on WhatsApp</a>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 style="margin-bottom:1.5rem;">Send a Message</h3>
+                <form action="https://formsubmit.co/{biz_email}" method="POST">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div>
+                            <label style="font-size:0.9rem; font-weight:bold;">Name</label>
+                            <input type="text" name="name" required placeholder="Your Name">
+                        </div>
+                        <div>
+                            <label style="font-size:0.9rem; font-weight:bold;">Email</label>
+                            <input type="email" name="email" required placeholder="Your Email">
+                        </div>
+                    </div>
+                    <label style="font-size:0.9rem; font-weight:bold;">Message</label>
+                    <textarea name="message" rows="5" required placeholder="How can we help you?"></textarea>
+                    
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Send Message</button>
+                    <input type="hidden" name="_captcha" value="false">
+                    <input type="hidden" name="_next" value="{prod_url}/contact.html">
+                </form>
+            </div>
+        </div>
+        <br><br>
+        <div style="border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.1);">
+            {map_iframe}
+        </div>
+    </div>
+</section>
+"""
 
+# 3. GENERATE LEGAL PAGES
+privacy_content = f'{gen_inner_header("Privacy Policy")}<section><div class="container legal-text">{format_text(priv_txt)}</div></section>'
+terms_content = f'{gen_inner_header("Terms of Service")}<section><div class="container legal-text">{format_text(term_txt)}</div></section>'
+
+# --- PREVIEW & DOWNLOAD ---
 c1, c2 = st.columns([3, 1])
 with c1:
     if preview_mode == "Home":
