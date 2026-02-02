@@ -6,7 +6,7 @@ import datetime
 
 # --- 1. APP CONFIGURATION ---
 st.set_page_config(
-    page_title="Titan v29.0 | Ultimate Edition", 
+    page_title="Titan v29.1 | Carousel Fix", 
     layout="wide", 
     page_icon="⚡",
     initial_sidebar_state="expanded"
@@ -61,7 +61,7 @@ st.markdown("""
 # --- 3. SIDEBAR: THE CONTROL CENTER ---
 with st.sidebar:
     st.title("Titan Architect")
-    st.caption("v29.0 | Omni Core")
+    st.caption("v29.1 | Carousel Fixed")
     st.divider()
     
     # 3.1 VISUAL DNA
@@ -81,7 +81,7 @@ with st.sidebar:
         s_color = c2.color_picker("Action (CTA)", "#3B82F6")  
         
         st.markdown("**Typography**")
-        h_font = st.selectbox("Headings", ["Montserrat", "Playfair Display", "Space Grotesk", "Oswald", "Clash Display"])
+        h_font = st.selectbox("Headings", ["Montserrat", "Space Grotesk", "Playfair Display", "Oswald", "Clash Display"])
         b_font = st.selectbox("Body Text", ["Inter", "Open Sans", "Roboto", "Satoshi", "Lora"])
         
         st.markdown("**UI Physics**")
@@ -259,11 +259,12 @@ def get_theme_css():
         anim_css = ".reveal { opacity: 0; transform: scale(0.95); transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); } .reveal.active { opacity: 1; transform: scale(1); }"
     
     # UPGRADED: Hero Carousel CSS
+    # FIX: Cleaned up duplications so images show properly
     hero_css = """
     .hero { position: relative; min-height: 90vh; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; color: white; padding-top: 80px; background-color: var(--p); }
-    .carousel-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; z-index: -1; }
+    .carousel-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.5s ease-in-out; z-index: 0; }
     .carousel-slide.active { opacity: 1; }
-    .hero-overlay { background: rgba(0,0,0,0.5); position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+    .hero-overlay { background: rgba(0,0,0,0.5); position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
     .hero-content { z-index: 2; position: relative; animation: slideUp 1s ease-out; }
     @keyframes slideUp { from { opacity:0; transform: translateY(30px); } to { opacity:1; transform: translateY(0); } }
     """
@@ -346,7 +347,7 @@ def get_theme_css():
 
     {anim_css}
     
-    /* MOBILE OPTIMIZATIONS (AUDIT FIX) */
+    /* MOBILE OPTIMIZATIONS */
     @media (max-width: 768px) {{
         .nav-links {{ 
             position: fixed; top: 70px; left: -100%; width: 100%; height: calc(100vh - 70px); 
@@ -429,7 +430,6 @@ def gen_features():
     for line in lines:
         if "|" in line:
             parts = line.split('|')
-            # UPGRADED: Handles both 2-part and 3-part splits
             if len(parts) >= 3:
                 icon_code = get_simple_icon(parts[0])
                 title = parts[1].strip()
@@ -533,7 +533,6 @@ def gen_inventory():
     """
 
 def gen_about_section():
-    # USES SHORT TEXT FOR HOME
     formatted_about = format_text(about_short)
     return f"""
     <section id="about"><div class="container">
@@ -569,7 +568,7 @@ def gen_footer():
     # FIX: Correct SVG path for YouTube
     icons = ""
     if fb_link: icons += f'<a href="{fb_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>'
-    if ig_link: icons += f'<a href="{ig_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M16.98 0a6.9 6.9 0 0 1 5.08 1.98A6.94 6.94 0 0 1 24 7.02v9.96c0 2.08-.68 3.87-1.98 5.13A7.14 7.14 0 0 1 16.94 24H7.06a7.06 7.06 0 0 1-5.03-1.89A6.96 6.96 0 0 1 0 16.94V7.02C0 2.8 2.8 0 7.02 0h9.96zM7.17 2.1c-1.4 0-2.6.48-3.46 1.33c-.85.85-1.33 2.06-1.33 3.46v10.3c0 1.3.47 2.5 1.33 3.36c.86.85 2.06 1.33 3.46 1.33h9.66c1.4 0 2.6-.48 3.46-1.33c.85-.85 1.33-2.06 1.33-3.46V6.89c0-1.4-.47-2.6-1.33-3.46c-.86-.85-2.06-1.33-3.46-1.33H7.17zm11.97 3.33c.77 0 1.4.63 1.4 1.4c0 .77-.63 1.4-1.4 1.4c-.77 0-1.4-.63-1.4-1.4c0-.77.63-1.4 1.4-1.4zM12 5.76c3.39 0 6.14 2.75 6.14 6.14c0 3.39-2.75 6.14-6.14 6.14c-3.39 0-6.14-2.75-6.14-6.14c0-3.39 2.75-6.14 6.14-6.14zm0 2.1c-2.2 0-3.99 1.79-3.99 4.04c0 2.25 1.79 4.04 3.99 4.04c2.2 0 3.99-1.79 3.99-4.04c0-2.25-1.79-4.04-3.99-4.04z"/></svg></a>'
+    if ig_link: icons += f'<a href="{ig_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M16.98 0a6.9 6.9 0 0 1 5.08 1.98A6.94 6.94 0 0 1 24 7.02v9.96c0 2.08-.68 3.87-1.98 5.13A7.14 7.14 0 0 1 16.94 24H7.06a7.06 7.06 0 0 1-5.03-1.89A6.96 6.96 0 0 1 0 16.94V7.02C0 2.8 2.8 0 7.02 0h9.96zM7.17 2.1c-1.4 0-2.6.48-3.46 1.33c-.85.85-1.33 2.06-1.33 3.46v10.3c0 1.3.47 2.5 1.33 3.36c.86.85 2.06 1.33 3.46 1.33h9.66c1.4 0 2.6-.48 3.46-1.33c.85-.85 1.33-2.06 1.33-3.46V6.89c0-1.4-.47-2.6-1.33-3.46c-.86-.85-2.06-1.33-3.46-1.33H7.17zm11.97 3.33c.77 0 1.4.63 1.4 1.4c0 .77-.63 1.4-1.4 1.4c-.77 0-1.4-.63-1.4-1.4c0-.77.63-1.4 1.4-1.4zM12 5.76c3.39 0 6.14 2.75 6.14 6.14c0 3.39-2.75 6.14-6.14 6.14c-3.39 0-6.14-2.75-6.14-6.14c0-3.39 2.75-6.14 6.14-6.14zm0 2.1c-2.2 0-3.99 1.79-3.99 4.04c0 2.25 1.79 4.04 3.99 4.04c2.2 0 3.99-1.79 3.99-4.04c0-2.25-1.79-4.04-3.99-4.04c0-2.25-1.79-4.04-3.99-4.04z"/></svg></a>'
     if x_link: icons += f'<a href="{x_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584l-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"></path></svg></a>'
     if li_link: icons += f'<a href="{li_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2a2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2zM4 2a2 2 0 1 1-2 2a2 2 0 0 1 2-2z"></path></svg></a>'
     if yt_link: icons += f'<a href="{yt_link}" target="_blank"><svg class="social-icon" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>'
@@ -743,14 +742,6 @@ def gen_product_page_content():
                                 <p style="font-size:0.9rem; font-weight:bold; opacity:0.7;">SHARE THIS:</p>
                                 <div style="display:flex; gap:0.8rem;">
                                     <button onclick="shareWA('${{currentUrl}}', '${{clean[0]}}')" class="share-btn share-wa"><svg viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91c0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23c-1.48 0-2.93-.39-4.19-1.15l-.3-.17l-3.12.82l.83-3.04l-.2-.32a8.188 8.188 0 0 1-1.26-4.38c.01-4.54 3.7-8.24 8.25-8.24m-3.53 3.16c-.13 0-.35.05-.54.26c-.19.2-.72.7-.72 1.72s.73 2.01.83 2.14c.1.13 1.44 2.19 3.48 3.07c.49.21.87.33 1.16.43c.49.16.94.13 1.29.08c.4-.06 1.21-.5 1.38-.98c.17-.48.17-.89.12-.98c-.05-.09-.18-.13-.37-.23c-.19-.1-.1.13-.1.13s-1.13-.56-1.32-.66c-.19-.1-.32-.15-.45.05c-.13.2-.51.65-.62.78c-.11.13-.23.15-.42.05c-.19-.1-.8-.3-1.53-.94c-.57-.5-1.02-1.12-1.21-1.45c-.11-.19-.01-.29.09-.38c.09-.08.19-.23.29-.34c.1-.11.13-.19.19-.32c.06-.13.03-.24-.01-.34c-.05-.1-.45-1.08-.62-1.48c-.16-.4-.36-.34-.51-.35c-.11-.01-.25-.01-.4-.01Z"/></svg></button>
-                                    
-                                    <button onclick="shareFB('${{currentUrl}}')" class="share-btn share-fb"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></button>
-                                    
-                                    <button onclick="shareX('${{currentUrl}}', '${{clean[0]}}')" class="share-btn share-x"><svg viewBox="0 0 24 24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584l-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"></path></svg></button>
-                                    
-                                    <button onclick="shareLI('${{currentUrl}}')" class="share-btn share-li"><svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2a2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2zM4 2a2 2 0 1 1-2 2a2 2 0 0 1 2-2z"></path></svg></button>
-                                    
-                                    <button onclick="copyLink('${{currentUrl}}')" class="share-btn share-cp"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"></path></svg></button>
                                 </div>
                             </div>
 
@@ -788,82 +779,42 @@ st.subheader("🚀 Launchpad")
 
 preview_mode = st.radio("Preview Page:", ["Home", "About", "Contact", "Privacy", "Terms", "Product Detail (Demo)"], horizontal=True)
 
-# HELPER: Function to generate a header for inner pages with the image
-def gen_inner_header(title):
-    return f"""
-    <section class="hero" style="min-height: 40vh; background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('{hero_img_1}'); background-size: cover; background-position: center;">
-        <div class="container">
-            <h1 style="font-size: 3.5rem; margin-bottom: 0;">{title}</h1>
-        </div>
-    </section>
-    """
+# Generate static contents for other pages with better formatting
+about_content = f'<section class="hero" style="min-height:50vh;"><div class="container"><h1>About Us</h1></div></section><section><div class="container legal-text">{format_text(about_long)}</div></section>'
 
-# 1. GENERATE ABOUT PAGE CONTENT (Fixed)
-about_body = format_text(about_long)
-about_content = f"""
-{gen_inner_header("About Us")}
-<section>
-    <div class="container">
-        <div class="about-grid">
-            <div class="legal-text">{about_body}</div>
-            <img src="{about_img}" style="width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);">
-        </div>
-    </div>
-</section>
-"""
-
-# 2. GENERATE CONTACT PAGE CONTENT (Fixed)
+# UPGRADED: Added FormSubmit.co Logic
 contact_content = f"""
-{gen_inner_header("Contact Us")}
-<section>
-    <div class="container">
-        <div class="grid-3" style="grid-template-columns: 1fr 2fr; gap: 3rem;">
-            <div>
-                <div style="background:var(--card); padding:2rem; border-radius:12px; border:1px solid #eee;">
-                    <h3 style="color:var(--p);">Get In Touch</h3>
-                    <p style="margin-top:1rem;"><strong>📍 Address:</strong><br>{biz_addr}</p>
-                    <p style="margin-top:1rem;"><strong>📞 Phone:</strong><br><a href="tel:{biz_phone}" style="color:var(--s);">{biz_phone}</a></p>
-                    <p style="margin-top:1rem;"><strong>📧 Email:</strong><br><a href="mailto:{biz_email}">{biz_email}</a></p>
-                    <br>
-                    <a href="https://wa.me/{wa_num}" target="_blank" class="btn btn-accent" style="width:100%; text-align:center;">Chat on WhatsApp</a>
-                </div>
-            </div>
-            
-            <div class="card">
-                <h3 style="margin-bottom:1.5rem;">Send a Message</h3>
-                <form action="https://formsubmit.co/{biz_email}" method="POST">
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-                        <div>
-                            <label style="font-size:0.9rem; font-weight:bold;">Name</label>
-                            <input type="text" name="name" required placeholder="Your Name">
-                        </div>
-                        <div>
-                            <label style="font-size:0.9rem; font-weight:bold;">Email</label>
-                            <input type="email" name="email" required placeholder="Your Email">
-                        </div>
-                    </div>
-                    <label style="font-size:0.9rem; font-weight:bold;">Message</label>
-                    <textarea name="message" rows="5" required placeholder="How can we help you?"></textarea>
-                    
-                    <button type="submit" class="btn btn-primary" style="width:100%;">Send Message</button>
-                    <input type="hidden" name="_captcha" value="false">
-                    <input type="hidden" name="_next" value="{prod_url}/contact.html">
-                </form>
-            </div>
+<section class="hero" style="min-height:50vh;"><div class="container"><h1>Contact Us</h1></div></section>
+<section><div class="container">
+    <div class="grid-3" style="grid-template-columns: 1fr 2fr;">
+        <div>
+            <h3>Get In Touch</h3>
+            <p><strong>Address:</strong><br>{biz_addr}</p><br>
+            <p><strong>Phone:</strong><br><a href="tel:{biz_phone}">{biz_phone}</a></p><br>
+            <p><strong>Email:</strong><br><a href="mailto:{biz_email}">{biz_email}</a></p>
         </div>
-        <br><br>
-        <div style="border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.1);">
-            {map_iframe}
+        <div class="card">
+            <form action="https://formsubmit.co/{biz_email}" method="POST">
+                <label>Name</label>
+                <input type="text" name="name" required>
+                <label>Email</label>
+                <input type="email" name="email" required>
+                <label>Message</label>
+                <textarea name="message" rows="5" required></textarea>
+                <button type="submit" class="btn btn-primary" style="width:100%;">Send Message</button>
+                <input type="hidden" name="_captcha" value="false">
+                <input type="hidden" name="_next" value="{prod_url}/contact.html">
+            </form>
         </div>
     </div>
-</section>
+    <br><br>
+    {map_iframe}
+</div></section>
 """
 
-# 3. GENERATE LEGAL PAGES
-privacy_content = f'{gen_inner_header("Privacy Policy")}<section><div class="container legal-text">{format_text(priv_txt)}</div></section>'
-terms_content = f'{gen_inner_header("Terms of Service")}<section><div class="container legal-text">{format_text(term_txt)}</div></section>'
+privacy_content = f'<section><div class="container legal-text"><h1>Privacy Policy</h1><br>{format_text(priv_txt)}</div></section>'
+terms_content = f'<section><div class="container legal-text"><h1>Terms of Service</h1><br>{format_text(term_txt)}</div></section>'
 
-# --- PREVIEW & DOWNLOAD ---
 c1, c2 = st.columns([3, 1])
 with c1:
     if preview_mode == "Home":
